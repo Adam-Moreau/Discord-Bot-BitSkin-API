@@ -10,9 +10,6 @@ A Discord bot that retrieves information about Mann Co. Supply Crate Keys from t
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
 
 ## Introduction
 
@@ -37,19 +34,24 @@ If you don't have Node.js and npm installed, you can download and install them f
 ### Installation
 
 1. Clone the repository:
+```shell
 git clone https://github.com/your-username/your-project.git
+```
 
-2. Navigate to the project directory:
-
+3. Navigate to the project directory:
+```shell
 cd your-project
+```
 
-3. Install dependencies:
-
+4. Install dependencies:
+```shell
 npm install
+```
 
 4. Install discord.js:
-
+```shell
 npm install discord.js
+```
 
 ### Usage
 To use the bot, invite it to your Discord server and interact with it using the /key command. The bot will respond with information about Mann Co. Supply Crate Keys available in the marketplace.
