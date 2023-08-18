@@ -1,9 +1,14 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const axios = require('axios');
 
+require('dotenv').config();
+
+const discordBotToken = process.env.DISCORD_BOT_TOKEN;
+const bitskinsApiKey = process.env.BITSKINS_API_KEY;
+
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
-const auth_key = 'YOUR_BITSKIN_TOKEN_HERE';
-const itemLimit = 20; // Number of items per message
+const auth_key = bitskinsApiKey;
+const itemLimit = 10; // Number of items per message
 
 client.once('ready', () => {
   console.log('Bot is ready');
@@ -16,6 +21,7 @@ client.once('ready', () => {
     });
   });
 });
+// ... (previous code)
 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return;
@@ -25,6 +31,11 @@ client.on('interactionCreate', async (interaction) => {
   if (commandName === 'key') {
     console.log('Command detected: /key');
     try {
+      const currentDate = new Date();
+      const formattedDate = currentDate.toLocaleString(); // Get the current date and time
+
+      await interaction.reply(`Fetching item information. Please wait... (Requested at: ${formattedDate})`);
+
       const body = {
         "limit": itemLimit,
         "offset": 0,
@@ -51,18 +62,14 @@ client.on('interactionCreate', async (interaction) => {
       const items = response.data.list;
 
       if (items.length > 0) {
-        let itemNumber = 1;
-        let itemDescriptions = '';
-
-        for (const item of items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
           const formattedPrice = (item.price / 1000).toFixed(2); // Convert cents to dollars and cents
-          itemDescriptions += `**Item ${itemNumber}:**\n`;
-          itemDescriptions += `Item ID: ${item.id}\nItem Name: ${item.name}\nItem Price: $${formattedPrice}\n---\n`;
-          itemNumber++;
-        }
-
-        if (itemDescriptions) {
-          await interaction.reply(itemDescriptions);
+          const itemDescription = `**Item ${i + 1}:**\nItem ID: [${item.id}](https://bitskins.com/item/tf2/${item.id}/mann-co.-supply-crate-key)\nItem Name: ${item.name}\nItem Price: $${formattedPrice}`;
+          
+          // Send each item as a separate message with a delay of 1 second between messages
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await interaction.channel.send(itemDescription);
         }
       } else {
         interaction.reply('No items found.');
@@ -74,4 +81,4 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-client.login('YOUR_DISCORD_BOT_TOKEN_HERE');
+client.login(discordBotToken);
