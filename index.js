@@ -21,8 +21,7 @@ client.once('ready', () => {
     });
   });
 });
-// ... (previous code)
-
+ 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return;
 
