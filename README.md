@@ -9,6 +9,9 @@ A Discord bot that retrieves information about Mann Co. Supply Crate Keys from t
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+  - [Setting up API Tokens](#setting-up-api-tokens)
+    - [Discord Bot Token](#discord-bot-token)
+    - [External API Tokens](#external-api-tokens)
 - [Usage](#usage)
 
 ## Introduction
