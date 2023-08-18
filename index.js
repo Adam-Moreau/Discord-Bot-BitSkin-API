@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, CommandInteraction } = require('discord.js');
 const axios = require('axios');
 
 require('dotenv').config();
@@ -21,7 +21,22 @@ client.once('ready', () => {
     });
   });
 });
- 
+
+// Register the /key command
+client.on('ready', async () => {
+  try {
+    await client.application?.commands.set([
+      {
+        name: 'key',
+        description: 'Retrieve information about Mann Co. Supply Crate Keys.',
+      },
+    ]);
+    console.log('Command /key is registered.');
+  } catch (error) {
+    console.error('Error registering /key command:', error.message);
+  }
+});
+
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return;
 
