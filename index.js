@@ -31,16 +31,31 @@ client.on('ready', async () => {
         description: 'Retrieve information about Mann Co. Supply Crate Keys.',
       },
     ]);
-    console.log('Command /key is registered.');
+    await client.application?.commands.set([
+      {
+        name: 'alert',
+        description: 'Set up an alert for low-priced items.',
+        options: [
+          {
+            name: 'price',
+            description: 'The maximum price for alerting.',
+            type: 10,
+            required: true,
+          },
+        ],
+      },
+    ]);
+    
+    console.log('Command /key and /alert are registered.');
   } catch (error) {
-    console.error('Error registering /key command:', error.message);
+    console.error('Error registering commands:', error.message);
   }
 });
 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return;
 
-  const { commandName } = interaction;
+  const { commandName, options } = interaction; // Destructure the options here
 
   if (commandName === 'key') {
     console.log('Command detected: /key');
@@ -80,7 +95,7 @@ client.on('interactionCreate', async (interaction) => {
           const item = items[i];
           const formattedPrice = (item.price / 1000).toFixed(2); // Convert cents to dollars and cents
           const itemDescription = `**Item ${i + 1}:**\nItem ID: [${item.id}](https://bitskins.com/item/tf2/${item.id}/mann-co.-supply-crate-key)\nItem Name: ${item.name}\nItem Price: $${formattedPrice}`;
-          
+
           // Send each item as a separate message with a delay of 1 second between messages
           await new Promise(resolve => setTimeout(resolve, 1000));
           await interaction.channel.send(itemDescription);
@@ -91,6 +106,20 @@ client.on('interactionCreate', async (interaction) => {
     } catch (error) {
       console.error('Error fetching data from API:', error.message);
       interaction.reply('An error occurred while fetching data from the API.');
+    }
+  } else if (commandName === 'alert') {
+
+    // Handle the /alert command with a parameter
+    const alertPrice = options.getNumber('price');
+    if (alertPrice !== null) {
+
+      console.log(alertPrice);
+      interaction.reply(`The alert price has been set to $${alertPrice.toFixed(2)}`);
+      // You can now use the alertPrice parameter in your alert logic
+      // For example: if (item.price <= alertPrice) { // Send an alert }
+    } else {
+      // Handle the case when the user didn't provide a valid price
+      interaction.reply('Please provide a valid maximum price for the alert.');
     }
   }
 });
