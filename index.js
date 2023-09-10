@@ -22,6 +22,16 @@ client.once('ready', () => {
   });
 });
 
+let alertPrice = null; // Initialize alertPrice outside the interaction handler
+
+function checkAlertCondition(item) {
+  if (alertPrice !== null && item.price <= alertPrice) {
+    // Execute your desired action when the condition is met
+    console.log('Alert triggered for item:', item.name);
+    // You can send a message or perform any other action here
+  }
+}
+
 // Register the /key command
 client.on('ready', async () => {
   try {
@@ -45,7 +55,6 @@ client.on('ready', async () => {
         ],
       },
     ]);
-    
     console.log('Command /key and /alert are registered.');
   } catch (error) {
     console.error('Error registering commands:', error.message);
@@ -113,15 +122,78 @@ client.on('interactionCreate', async (interaction) => {
     const alertPrice = options.getNumber('price');
     if (alertPrice !== null) {
 
+      const newAlertPrice = options.getNumber('price');
+
+      if (newAlertPrice === alertPrice) {
+        alertPrice = newAlertPrice;
+        interaction.reply(`The alert price has been updated to $${alertPrice.toFixed(2)}`);
+      } else {  
+        interaction.reply('Please provide a valid maximum price for the alert.');
+      }
+
+
       console.log(alertPrice);
       interaction.reply(`The alert price has been set to $${alertPrice.toFixed(2)}`);
       // You can now use the alertPrice parameter in your alert logic
       // For example: if (item.price <= alertPrice) { // Send an alert }
+      alertLoopStart(interaction, alertPrice);
+
     } else {
       // Handle the case when the user didn't provide a valid price
       interaction.reply('Please provide a valid maximum price for the alert.');
     }
   }
 });
+
+function alertLoopStart(interaction, alertPrice) {
+  // Check alert condition periodically
+  setInterval(async () => {
+    try {
+      if (alertPrice !== null) {
+        const body = {
+          "limit": null,
+          "offset": 0,
+          "order": [
+            {
+              "field": "price",
+              "order": "ASC"
+            }
+          ],
+          "where": {
+            "skin_name": "Mann Co. Supply Crate Key",
+            "price_from": alertPrice * 1000,
+            "price_to": alertPrice * 1000
+          }
+        };
+
+        const response = await axios.post("https://api.bitskins.com/market/search/440", body, {
+          headers: {
+            "content-type": "application/json",
+            "x-apikey": auth_key,
+          },
+        });
+
+        const items = response.data.list;
+
+        if (items.length > 0) {
+          const item = items[1];
+          const formattedPrice = (item.price / 1000).toFixed(2); // Convert cents to dollars and cents
+          const itemDescription = `**${items.length} Items found : **\nItem ID: [${item.id}](https://bitskins.com/item/tf2/${item.id}/mann-co.-supply-crate-key)\nItem Name: ${item.name}\nItem Price: $${formattedPrice}`;
+
+          // Send each item as a separate message with a delay of 1 second between messages
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await interaction.channel.send(itemDescription);
+
+          // Check the alert condition for this item
+          checkAlertCondition(item);
+        } else {
+          interaction.followUp(`No items found for $${alertPrice.toFixed(2)}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching data from API:', error.message);
+    }
+  }, 10000); // Check every 10 seconds
+}
 
 client.login(discordBotToken);
